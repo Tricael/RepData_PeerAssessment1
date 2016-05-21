@@ -21,7 +21,7 @@ activity.dat<-read.csv(unz("activity.zip","activity.csv"))
 The packages to be used were also loaded using the *library* command.  
 
 The only processing needed at the start was to convert the variable 'date' using lubridate.
-```{r }
+```{r load}
 activity.dat<-mutate(activity.dat,date=parse_date_time(date,"%Y%m%d"))
 ```
 
@@ -32,19 +32,19 @@ activity.summary<-summarize(activity.grouped,total_steps=sum(steps),mean_steps=m
 ```
 
 ###Q1b. Histogram of total number of steps taken each day
-```{r messages=FALSE,warning=FALSE,error=FALSE,echo=FALSE}
+```{r Q1b}
 qplot(activity.summary$total_steps,geom="histogram",main="Histogram: Total steps/day",xlab="steps",ylab="count",bins=30)
 ```
 
 ###Q1c. Calculate and report the mean and median of the total number of steps taken per day
 As seen from the boxplots, the median steps is 0 throughout.
-```{r echo=FALSE}
+```{r Q1c, echo=FALSE}
 barplot(activity.summary$mean_steps,main="Mean steps per day",xlab="steps",ylab="count")
 barplot(activity.summary$median_steps,main="Median steps per day",xlab="steps",ylab="count")
 ```
 
 ###Q2a. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-```{r echo=FALSE}
+```{r Q2a}
 activity.grp2<-activity.dat
 activity.grp2<-group_by(activity.dat,interval)
 grp2.summary<-summarize(activity.grp2,mean.steps=mean(steps,na.rm=TRUE),sum.steps=sum(steps,na.rm=TRUE))
@@ -53,19 +53,19 @@ plot(grp2.summary$interval,grp2.summary$mean.steps,type="l",xlab="interval",ylab
 ```
 
 ###Q2b. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-```{r echo=FALSE}
+```{r Q2b, echo=FALSE}
 max_step.int<-grp2.summary$interval[which.max(grp2.summary$mean.steps)]
 max_step.int
 ```
 
 ###Q3a. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
-```{r echo=FALSE}
+```{r Q3a, echo=FALSE}
 sum(is.na(activity.dat$steps))
 ```
 
 ###Q3b.Devise a strategy for filling in all of the missing values in the dataset and create a new dataset that is equal to the original dataset but with the missing data filled in.
 We simply replace the missing values for that interval with the mean value of that interval as averaged across *all* days. This uses tidyr but *melt* and *cast* functions work as well.
-```{r}
+```{r Q3b}
 NA.removed<-spread(activity.dat,interval,steps)
 temp<-NA.removed[2:289]
 dat.colMeans<-colMeans(temp,na.rm=TRUE)
@@ -76,7 +76,7 @@ NA.removed[2:289]<-temp
     
 ###Q3c. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 Comparing Q1b and Q3c plots, we find that they are the same, except that the missing values (NA) have been replaced by the mean values of that interval averaged across all days.
-``` {r echo=FALSE}
+``` {r Q3c, echo=FALSE}
 NA.removed<-arrange(gather(NA.removed,"interval","steps",2:289),date)
 NA.removed<-group_by(NA.removed,date)
 NA.removed_summary<-summarize(NA.removed,total_steps=sum(steps),mean_steps=mean(steps),median_steps=median(steps))
@@ -85,14 +85,14 @@ barplot(NA.removed_summary$median_steps,main="Median steps per day",xlab="steps"
 ```
 
 ###Q4a. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
-```{r}
+```{r Q4a}
 weekdayerizer<-mutate(NA.removed,day=wday(date),wkd=(ifelse(day%in%c(1,7),"weekend","weekday")))
 weekdayerizer$wkd<-as.factor(weekdayerizer$wkd)
 weekdayerizer$interval<-as.numeric(weekdayerizer$interval)
 ```
 
 ###Q4b. Make a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
-```{r echo=FALSE}
+```{r Q4b, echo=FALSE}
 weekdayerizer.summ<-group_by(weekdayerizer,wkd,interval)
 weekday.summary<-summarize(weekdayerizer.summ,mean_steps=mean(steps))
 ggplot(weekday.summary,aes(x=interval,y=mean_steps))+geom_line()+facet_grid(wkd~.)

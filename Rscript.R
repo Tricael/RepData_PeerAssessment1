@@ -19,11 +19,13 @@ activity.summary<-summarize(activity.grouped,total_steps=sum(steps),mean_steps=m
 #filter(activity.grouped,Date2=ymd("xx-xx-xx"))
 #qplot(activity.summary$mean_steps,geom="histogram",main="Histogram: mean nos. steps",xlab="steps",log="y",ylab="log10(count)")
 
-qplot(activity.summary$mean_steps,geom="histogram",main="Histogram: mean nos. steps",
+qplot(activity.summary$total_steps,geom="histogram",main="Histogram: Total steps/day",
       xlab="steps",ylab="count")
 
-barplot(activity.summary$total_steps,main="Total steps per day",
+barplot(activity.summary$total_steps,main="mean steps per day",
       xlab="steps",ylab="count")
+barplot(activity.summary$median_steps,main="median steps per day",
+        xlab="steps",ylab="count")
 
 #average daily pattern
 activity.grp2<-activity.dat
